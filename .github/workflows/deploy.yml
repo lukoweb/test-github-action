@@ -1,0 +1,36 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    env:
+      APITOGO_TOKEN: d5a1bc7726a25c992ea302bef87ddb5ebab77066fc1e4ccdc5c28136035a630b07-8afed972-9f5a-4bfd-a7db-23cb6890aef901e010009e7ec61e
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build project
+        run: npm run build
+
+      - name: Install APIToGo CLI
+        run: npm install -g @lukoweb/apitogo
+
+      - name: Deploy project
+        run: apitogo deploy --deployment-token="$APITOGO_TOKEN"
