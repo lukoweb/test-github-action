@@ -10,11 +10,13 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-and-deploy:
+  preview:
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
 
-    env:
-      APITOGO_TOKEN: d5a1bc7726a25c992ea302bef87ddb5ebab77066fc1e4ccdc5c28136035a630b07-8afed972-9f5a-4bfd-a7db-23cb6890aef901e010009e7ec61e
+    environment:
+      name: preview
+      url: ${{ steps.deploy.outputs.url }}
 
     steps:
       - name: Checkout repository
@@ -29,13 +31,53 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Build project
+        run: npm run build
+
       - name: Install APIToGo CLI
         run: npm install -g @lukoweb/apitogo
 
-      - name: Deploy Preview
-        if: github.event_name == 'pull_request'
-        run: apitogo deploy --deployment-token="$APITOGO_TOKEN" --env=preview
+      - name: Deploy preview
+        id: deploy
+        env:
+          APITOGO_TOKEN: d5a1bc7726a25c992ea302bef87ddb5ebab77066fc1e4ccdc5c28136035a630b07-8afed972-9f5a-4bfd-a7db-23cb6890aef901e010009e7ec61e
+        shell: bash
+        run: |
+          OUTPUT=$(apitogo deploy --deployment-token="$APITOGO_TOKEN" --env=preview)
 
-      - name: Deploy Production
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+          echo "$OUTPUT"
+
+          URL=$(echo "$OUTPUT" | jq -r '.url')
+
+          echo "url=$URL" >> "$GITHUB_OUTPUT"
+
+  production:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+
+    environment:
+      name: production
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build project
+        run: npm run build
+
+      - name: Install APIToGo CLI
+        run: npm install -g @lukoweb/apitogo
+
+      - name: Deploy production
+        env:
+          APITOGO_TOKEN: d5a1bc7726a25c992ea302bef87ddb5ebab77066fc1e4ccdc5c28136035a630b07-8afed972-9f5a-4bfd-a7db-23cb6890aef901e010009e7ec61e
         run: apitogo deploy --deployment-token="$APITOGO_TOKEN"
