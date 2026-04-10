@@ -32,7 +32,7 @@ jobs:
         run: npm ci
 
       - name: Install APIToGo CLI
-        run: npm install -g @lukoweb/apitogo
+        run: npm install -g @lukoweb/apitogo@latest
 
       - name: Deploy preview
         id: deploy
