@@ -34,13 +34,16 @@ jobs:
       - name: Install APIToGo CLI
         run: npm install -g @lukoweb/apitogo@latest
 
+      - name: Check APIToGo version
+        run: apitogo --version
+
       - name: Deploy preview
         id: deploy
         env:
           APITOGO_TOKEN: d5a1bc7726a25c992ea302bef87ddb5ebab77066fc1e4ccdc5c28136035a630b07-8afed972-9f5a-4bfd-a7db-23cb6890aef901e010009e7ec61e
         shell: bash
         run: |
-          OUTPUT=$(npx apitogo deploy --deployment-token="$APITOGO_TOKEN" --env=preview --json-only)
+          OUTPUT=$(apitogo deploy --deployment-token="$APITOGO_TOKEN" --env=preview --json-only)
 
           echo "$OUTPUT"
 
@@ -74,9 +77,12 @@ jobs:
         run: npm ci
 
       - name: Install APIToGo CLI
-        run: npm install -g @lukoweb/apitogo
+        run: npm install -g @lukoweb/apitogo@latest
+
+      - name: Check APIToGo version
+        run: apitogo --version
 
       - name: Deploy production
         env:
           APITOGO_TOKEN: d5a1bc7726a25c992ea302bef87ddb5ebab77066fc1e4ccdc5c28136035a630b07-8afed972-9f5a-4bfd-a7db-23cb6890aef901e010009e7ec61e
-        run: npx apitogo deploy --deployment-token="$APITOGO_TOKEN" --json-only
+        run: apitogo deploy --deployment-token="$APITOGO_TOKEN" --json-only
