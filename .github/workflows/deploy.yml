@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - main
+  pull_request:
+    branches:
+      - main
   workflow_dispatch:
 
 jobs:
@@ -32,5 +35,10 @@ jobs:
       - name: Install APIToGo CLI
         run: npm install -g @lukoweb/apitogo
 
-      - name: Deploy project
+      - name: Deploy Preview
+        if: github.event_name == 'pull_request'
+        run: apitogo deploy --deployment-token="$APITOGO_TOKEN" --env=preview
+
+      - name: Deploy Production
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: apitogo deploy --deployment-token="$APITOGO_TOKEN"
